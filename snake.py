@@ -37,9 +37,10 @@ class Snake:
     # Función para desplegar el gamplay completo del snake
     def gameplay(self):
         while self.flag:
-            self.updateWindow()
-            self.clock.tick(10)
-            self.snake.move()
+            self.updateWindow()             # Actualización de los elementos en pantalla
+            self.clock.tick(5)              # Velocidad del juego
+            self.snake.move()               # Listener del movimiento del Snake
+            self.flag = self.snake.colittion() # Corroboración de los límites del snake
             pygame.time.delay(50)
 
 # Clase para pintar el cuerpo de la serpiente en el mapa
@@ -64,6 +65,8 @@ class SnakeBody:
         aux_body = []
         # Se crea el ciclo donde será evaluado el listener
         for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
             # Se crea el listener para el teclado
             keys = pygame.key.get_pressed()
             for key in keys:
@@ -91,6 +94,23 @@ class SnakeBody:
             aux_body.append(self.body[i])
         # El cuerpo nuevo sustituye al viejo
         self.body = aux_body.copy()
+    
+    # Función para verificar si el Snake no ha chocado contra las paredes
+    def colittion(self):
+        # Verifica si no se ha salido del eje X o Y positivo en caso de hacerlo, se termina el juego
+        if self.head[0] > self.rows or self.head[1] > self.rows:
+            pygame.display.quit()
+            pygame.quit()
+            return False
+        # Verifica si no se ha salido del eje X o Y negativo en caso de hacerlo, se termina el juego
+        elif self.head[0] < 0 or self.head[1] < 0:
+            pygame.display.quit()
+            pygame.quit()
+            return False
+        else:
+            return True
+
+
     
     # Dibuja el cuerpo de la serpiente en pantalla
     def draw(self):
