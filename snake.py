@@ -1,5 +1,6 @@
 import pygame
 import copy
+import random
 
 class Snake:
     def __init__(self, size = 600, rows = 21):
@@ -19,6 +20,7 @@ class Snake:
     # Función para actualizar el estado de la pantalla
     def updateWindow(self):
         self.window.fill((0,0,0))       # Define el color de la pantalla en NEGRO
+        self.snake.draw_food()
         self.snake.draw()               # Dibuja la serpiente en pantalla
         self.drawGrid()                 # Dibuja el cuadriculado en pantalla
         pygame.display.update()         # Muestra lo previamente dibujado en la ventana a modo de Update
@@ -38,35 +40,36 @@ class Snake:
     def gameplay(self):
         while self.flag:
             self.updateWindow()             # Actualización de los elementos en pantalla
-            self.clock.tick(5)              # Velocidad del juego
+            self.clock.tick(10)              # Velocidad del juego
             self.snake.move()               # Listener del movimiento del Snake
             self.flag = self.snake.colittion() # Corroboración de los límites del snake
             pygame.time.delay(50)
 
 # Clase para pintar el cuerpo de la serpiente en el mapa
 class SnakeBody:
-    def __init__(self, size, rows, window, colorHead = (255,255,255), colorBody = (47,79,79)):
+    def __init__(self, size, rows, window, colorHead = (255,255,255), colorBody = (47,79,79), colorFood = (255,0,0)):
         # Variables para el manejo del cuerpo de la serpiente
         self.body = []
         self.size = size
         self.rows = rows
         self.head = (int(self.rows/2), int(self.rows/2))
         self.body.append(self.head)
-        # Variables para el apartado gráfico de la serpiente
+        # Variables para el apartado gráfico de la serpiente y la comida
         self.window = window
         self.colorHead = colorHead
         self.colorBody = colorBody
+        self.colorFood = colorFood
         # Variables para agrear de forma continua el movimiento del Snake
         self.x = 1
         self.y = 0
+        # Variable para la posición de la comida
+        self.food_position = (random.randint(0, self.rows -1), random.randint(0,self.rows - 1))
 
     # Función para el movimiento de la serpiente dentro del mapa
     def move(self):
         aux_body = []
         # Se crea el ciclo donde será evaluado el listener
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
             # Se crea el listener para el teclado
             keys = pygame.key.get_pressed()
             for key in keys:
@@ -107,10 +110,19 @@ class SnakeBody:
             pygame.display.quit()
             pygame.quit()
             return False
+        # Verifica que la colisión haya llegado con la posición de la comida
+        elif self.head == self.food_position:
+            # Crea una nueva posición para la comida del Snake
+            self.food_position = (random.randint(0, self.rows - 1), random.randint(0, self.rows - 1))
+            # Crea un nuevo cuerpo para el Snake agregando la comida que se comió
+            aux_body = []
+            aux_body.append(self.head)
+            for i in range(len(self.body)):
+                aux_body.append(self.body[i])
+            self.body = aux_body.copy()
+            return True
         else:
             return True
-
-
     
     # Dibuja el cuerpo de la serpiente en pantalla
     def draw(self):
@@ -125,3 +137,11 @@ class SnakeBody:
                 is_head = False
             else:
                 pygame.draw.rect(self.window, self.colorBody, (i * dis + 1, j * dis + 1, dis, dis))
+    
+    # Dibuja la comida en el mapa
+    def draw_food(self):
+        # Se toma la posición de la comida para colocarse en pantalla
+        i = self.food_position[0]
+        j = self.food_position[1]
+        dis = self.size / self.rows
+        pygame.draw.rect(self.window, self.colorFood, (i * dis + 1, j * dis + 1, dis, dis))
