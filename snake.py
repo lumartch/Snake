@@ -39,10 +39,10 @@ class Snake:
     # Función para desplegar el gamplay completo del snake
     def gameplay(self):
         while self.flag:
-            self.updateWindow()             # Actualización de los elementos en pantalla
-            self.clock.tick(10)              # Velocidad del juego
-            self.snake.move()               # Listener del movimiento del Snake
-            self.flag = self.snake.colittion() # Corroboración de los límites del snake
+            self.updateWindow()                 # Actualización de los elementos en pantalla
+            self.clock.tick(10)                 # Velocidad del juego
+            self.snake.move()                   # Listener del movimiento del Snake
+            self.flag = self.snake.colittion()  # Corroboración de los límites del snake
             pygame.time.delay(50)
 
 # Clase para pintar el cuerpo de la serpiente en el mapa
@@ -63,7 +63,8 @@ class SnakeBody:
         self.x = 1
         self.y = 0
         # Variable para la posición de la comida
-        self.food_position = (random.randint(0, self.rows -1), random.randint(0,self.rows - 1))
+        self.food_position = 0
+        self.new_food_pos()
 
     # Función para el movimiento de la serpiente dentro del mapa
     def move(self):
@@ -96,32 +97,37 @@ class SnakeBody:
         for i in range(len(self.body) - 1):
             aux_body.append(self.body[i])
         # El cuerpo nuevo sustituye al viejo
+        self.body.clear()
         self.body = aux_body.copy()
     
     # Función para verificar si el Snake no ha chocado contra las paredes
     def colittion(self):
         # Verifica si no se ha salido del eje X o Y positivo en caso de hacerlo, se termina el juego
-        if self.head[0] > self.rows or self.head[1] > self.rows:
-            pygame.display.quit()
-            pygame.quit()
-            return False
         # Verifica si no se ha salido del eje X o Y negativo en caso de hacerlo, se termina el juego
-        elif self.head[0] < 0 or self.head[1] < 0:
+        if self.head[0] > self.rows - 1 or self.head[1] > self.rows - 1 or self.head[0] < 0 or self.head[1] < 0:
             pygame.display.quit()
             pygame.quit()
             return False
         # Verifica que la colisión haya llegado con la posición de la comida
         elif self.head == self.food_position:
             # Crea una nueva posición para la comida del Snake
-            self.food_position = (random.randint(0, self.rows - 1), random.randint(0, self.rows - 1))
+            self.new_food_pos()
             # Crea un nuevo cuerpo para el Snake agregando la comida que se comió
             aux_body = []
             aux_body.append(self.head)
             for i in range(len(self.body)):
                 aux_body.append(self.body[i])
+            self.body.clear()
             self.body = aux_body.copy()
             return True
         else:
+            # Verifica si la posición del Head colisiona con alguna parte del Body
+            for i in range(len(self.body)):
+                if i != 0:
+                    if self.head == self.body[i]:
+                        pygame.display.quit()
+                        pygame.quit()
+                        return False
             return True
     
     # Dibuja el cuerpo de la serpiente en pantalla
@@ -145,3 +151,11 @@ class SnakeBody:
         j = self.food_position[1]
         dis = self.size / self.rows
         pygame.draw.rect(self.window, self.colorFood, (i * dis + 1, j * dis + 1, dis, dis))
+        
+    # Asigna una nueva posición aleatoria al alimento, que no se encuentre en colisión con el cuerpo del Snake
+    def new_food_pos(self):
+        self.food_position = (random.randint(0, self.rows -1), random.randint(0,self.rows - 1))
+        for i in range(len(self.body)):
+            if self.food_position == self.body[i]:
+                i = 0
+                self.food_position = (random.randint(0, self.rows -1), random.randint(0,self.rows - 1))
