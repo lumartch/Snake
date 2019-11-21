@@ -42,8 +42,8 @@ class Snake:
             self.updateWindow()                 # Actualización de los elementos en pantalla
             self.clock.tick(10)                 # Velocidad del juego
             self.snake.move()                   # Listener del movimiento del Snake
-            self.flag = self.snake.colittion()  # Corroboración de los límites del snake
-            pygame.time.delay(50)
+            self.flag = self.snake.collition()  # Corroboración de los límites del snake
+            pygame.time.delay(30)
 
 # Clase para pintar el cuerpo de la serpiente en el mapa
 class SnakeBody:
@@ -60,15 +60,14 @@ class SnakeBody:
         self.colorBody = colorBody
         self.colorFood = colorFood
         # Variables para agrear de forma continua el movimiento del Snake
-        self.x = 1
-        self.y = 0
+        self.x = 1      # El Snake comenzará siempre su movimiento por la derecha
+        self.y = 0      # El Snake no se movera de forma vertical
         # Variable para la posición de la comida
         self.food_position = 0
         self.new_food_pos()
 
     # Función para el movimiento de la serpiente dentro del mapa
     def move(self):
-        aux_body = []
         # Se crea el ciclo donde será evaluado el listener
         for event in pygame.event.get():
             # Se crea el listener para el teclado
@@ -90,20 +89,14 @@ class SnakeBody:
                     if(self.y != -1):
                         self.y = 1
                         self.x = 0
-        # Se actualiza la nueva posición del Head del Snake
+        # Se actualiza la nueva posición del Head del Snake y se bota la última posición que ya no es necesaria
         self.head = (self.head[0] + self.x, self.head[1] + self.y)
-        # Se crea un nuevo cuerpo para la serpiente de forma auxiliar
-        aux_body.append(self.head)
-        for i in range(len(self.body) - 1):
-            aux_body.append(self.body[i])
-        # El cuerpo nuevo sustituye al viejo
-        self.body.clear()
-        self.body = aux_body.copy()
+        self.body.insert(0, self.head)
+        self.body.pop()
     
     # Función para verificar si el Snake no ha chocado contra las paredes
-    def colittion(self):
-        # Verifica si no se ha salido del eje X o Y positivo en caso de hacerlo, se termina el juego
-        # Verifica si no se ha salido del eje X o Y negativo en caso de hacerlo, se termina el juego
+    def collition(self):
+        # Verifica si no se ha salido del eje X o Y positivo/negativo en caso de hacerlo, se termina el juego
         if self.head[0] > self.rows - 1 or self.head[1] > self.rows - 1 or self.head[0] < 0 or self.head[1] < 0:
             pygame.display.quit()
             pygame.quit()
@@ -113,17 +106,12 @@ class SnakeBody:
             # Crea una nueva posición para la comida del Snake
             self.new_food_pos()
             # Crea un nuevo cuerpo para el Snake agregando la comida que se comió
-            aux_body = []
-            aux_body.append(self.head)
-            for i in range(len(self.body)):
-                aux_body.append(self.body[i])
-            self.body.clear()
-            self.body = aux_body.copy()
+            self.body.insert(0, self.head)
             return True
         else:
             # Verifica si la posición del Head colisiona con alguna parte del Body
             for i in range(len(self.body)):
-                if i != 0:
+                if i != 0:      # Se salta el Head para solo evaluar el resto del cuerpo
                     if self.head == self.body[i]:
                         pygame.display.quit()
                         pygame.quit()
@@ -151,7 +139,7 @@ class SnakeBody:
         j = self.food_position[1]
         dis = self.size / self.rows
         pygame.draw.rect(self.window, self.colorFood, (i * dis + 1, j * dis + 1, dis, dis))
-        
+
     # Asigna una nueva posición aleatoria al alimento, que no se encuentre en colisión con el cuerpo del Snake
     def new_food_pos(self):
         self.food_position = (random.randint(0, self.rows -1), random.randint(0,self.rows - 1))
