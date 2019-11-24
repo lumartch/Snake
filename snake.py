@@ -56,17 +56,20 @@ class SnakeBody:
         self.body.append(self.head)
         # Variable que castiga la cantidad de pasos dados
         self.pasos_restantes = 100
+        # Variable para la distancia restante que quedá entre el Snake y la comida
+        self.distancia = 0
         # Variables para el apartado gráfico de la serpiente y la comida
         self.window = window
         self.colorHead = colorHead
         self.colorBody = colorBody
         self.colorFood = colorFood
         # Variables para agrear de forma continua el movimiento del Snake
-        self.x = 1      # El Snake comenzará siempre su movimiento por la derecha
+        self.x = 0      # El Snake comenzará siempre su movimiento por la derecha
         self.y = 0      # El Snake no se movera de forma vertical
         # Variable para la posición de la comida
         self.food_position = 0
         self.new_food_pos()
+        self.dis_food_snake()
 
     # Función para el movimiento de la serpiente dentro del mapa
     def move(self):
@@ -94,11 +97,12 @@ class SnakeBody:
         # Resta de forma indiferente el valor absoluto de X o Y a los pasos restantes
         self.pasos_restantes -= abs(self.x)
         self.pasos_restantes -= abs(self.y)
-        print(self.pasos_restantes)
         # Se actualiza la nueva posición del Head del Snake y se bota la última posición que ya no es necesaria
         self.head = (self.head[0] + self.x, self.head[1] + self.y)
         self.body.insert(0, self.head)
         self.body.pop()
+        # Se actualiza la distancia entre el Snake y la comida
+        self.dis_food_snake()
     
     # Función para verificar si el Snake no ha chocado contra las paredes
     def collition(self):
@@ -159,3 +163,9 @@ class SnakeBody:
             if self.food_position == self.body[i]:
                 i = 0
                 self.food_position = (random.randint(0, self.rows -1), random.randint(0,self.rows - 1))
+    
+    # Función que cálcula la distancia restante entre el Snake y la comida
+    def dis_food_snake(self):
+        x = self.food_position[0] - self.head[0]
+        y = self.food_position[1] - self.head[1]
+        self.distancia = abs(x) + abs(y)
