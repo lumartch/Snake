@@ -1,8 +1,9 @@
 import pygame
-import copy
 import random
 
 class Snake:
+    MIN_VALUE = 20
+    MAX_VALUE = 0
     def __init__(self, size = 600, rows = 21):
         # Variables para definir el tamaño de la pantalla y sus subdivisiones
         self.width = size
@@ -64,7 +65,7 @@ class SnakeBody:
         self.colorBody = colorBody
         self.colorFood = colorFood
         # Variables para agrear de forma continua el movimiento del Snake
-        self.x = 0      # El Snake comenzará siempre su movimiento por la derecha
+        self.x = 1      # El Snake comenzará siempre su movimiento por la derecha
         self.y = 0      # El Snake no se movera de forma vertical
         # Variable para la posición de la comida
         self.food_position = 0
@@ -94,6 +95,7 @@ class SnakeBody:
                     if(self.y != -1):
                         self.y = 1
                         self.x = 0
+
         # Resta de forma indiferente el valor absoluto de X o Y a los pasos restantes
         self.pasos_restantes -= abs(self.x)
         self.pasos_restantes -= abs(self.y)
