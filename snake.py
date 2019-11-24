@@ -2,8 +2,8 @@ import pygame
 import random
 
 class Snake:
-    MIN_VALUE = 20
-    MAX_VALUE = 0
+    MIN_VALUE = 0
+    MAX_VALUE = 3
     def __init__(self, size = 600, rows = 21):
         # Variables para definir el tamaño de la pantalla y sus subdivisiones
         self.width = size
@@ -38,13 +38,21 @@ class Snake:
             pygame.draw.line(self.window, (255,255,255), (0,y), (self.width, y))
     
     # Función para desplegar el gamplay completo del snake
-    def gameplay(self):
-        while self.flag:
-            self.updateWindow()                 # Actualización de los elementos en pantalla
-            self.clock.tick(10)                 # Velocidad del juego
-            self.snake.move()                   # Listener del movimiento del Snake
-            self.flag = self.snake.collition()  # Corroboración de los límites del snake
-            pygame.time.delay(30)
+    #def gameplay(self):
+    #    while self.flag:
+    #        self.updateWindow()                 # Actualización de los elementos en pantalla
+    #        self.clock.tick(10)                 # Velocidad del juego
+    #        self.snake.move()                   # Listener del movimiento del Snake
+    #        self.flag = self.snake.collition()  # Corroboración de los límites del snake
+    #        pygame.time.delay(30)
+    
+    # Fitness para el comportamiento del Snake
+    def fitness(self, cromosoma):
+        for i in range(len(cromosoma)):
+            if cromosoma[i] == 0:
+                return self.snake.distancia / self.snake.comida_ingerida
+        return 0
+
 
 # Clase para pintar el cuerpo de la serpiente en el mapa
 class SnakeBody:
@@ -65,12 +73,14 @@ class SnakeBody:
         self.colorBody = colorBody
         self.colorFood = colorFood
         # Variables para agrear de forma continua el movimiento del Snake
-        self.x = 1      # El Snake comenzará siempre su movimiento por la derecha
+        self.x = 0      # El Snake comenzará siempre su movimiento por la derecha
         self.y = 0      # El Snake no se movera de forma vertical
         # Variable para la posición de la comida
         self.food_position = 0
         self.new_food_pos()
         self.dis_food_snake()
+        # Comida ingerida actualmente
+        self.comida_ingerida = 1
 
     # Función para el movimiento de la serpiente dentro del mapa
     def move(self):
@@ -141,22 +151,22 @@ class SnakeBody:
         is_head = True
         # Por cada elemento guardado en la variable "Body" se tomaran los ejex X y Y para pintarlos en pantalla
         for b in self.body: 
-            i = b[0]
-            j = b[1]
+            x = b[0]
+            y = b[1]
             dis = self.size / self.rows
             if is_head:
-                pygame.draw.rect(self.window, self.colorHead, (i * dis + 1, j * dis + 1, dis, dis))
+                pygame.draw.rect(self.window, self.colorHead, (x * dis + 1, y * dis + 1, dis, dis))
                 is_head = False
             else:
-                pygame.draw.rect(self.window, self.colorBody, (i * dis + 1, j * dis + 1, dis, dis))
+                pygame.draw.rect(self.window, self.colorBody, (x * dis + 1, y * dis + 1, dis, dis))
     
     # Dibuja la comida en el mapa
     def draw_food(self):
         # Se toma la posición de la comida para colocarse en pantalla
-        i = self.food_position[0]
-        j = self.food_position[1]
+        x = self.food_position[0]
+        y = self.food_position[1]
         dis = self.size / self.rows
-        pygame.draw.rect(self.window, self.colorFood, (i * dis + 1, j * dis + 1, dis, dis))
+        pygame.draw.rect(self.window, self.colorFood, (x * dis + 1, y * dis + 1, dis, dis))
 
     # Asigna una nueva posición aleatoria al alimento, que no se encuentre en colisión con el cuerpo del Snake
     def new_food_pos(self):
@@ -164,7 +174,7 @@ class SnakeBody:
         for i in range(len(self.body)):
             if self.food_position == self.body[i]:
                 i = 0
-                self.food_position = (random.randint(0, self.rows -1), random.randint(0,self.rows - 1))
+                self.food_position = (random.randint(0, self.rows - 1), random.randint(0,self.rows - 1))
     
     # Función que cálcula la distancia restante entre el Snake y la comida
     def dis_food_snake(self):

@@ -1,4 +1,6 @@
 import snake
+import agc
 
 s = snake.Snake()
-s.gameplay()
+algorithm = agc.AGC(s)
+algorithm.run()
