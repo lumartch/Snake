@@ -54,6 +54,8 @@ class SnakeBody:
         self.rows = rows
         self.head = (int(self.rows/2), int(self.rows/2))
         self.body.append(self.head)
+        # Variable que castiga la cantidad de pasos dados
+        self.pasos_restantes = 100
         # Variables para el apartado gráfico de la serpiente y la comida
         self.window = window
         self.colorHead = colorHead
@@ -89,6 +91,10 @@ class SnakeBody:
                     if(self.y != -1):
                         self.y = 1
                         self.x = 0
+        # Resta de forma indiferente el valor absoluto de X o Y a los pasos restantes
+        self.pasos_restantes -= abs(self.x)
+        self.pasos_restantes -= abs(self.y)
+        print(self.pasos_restantes)
         # Se actualiza la nueva posición del Head del Snake y se bota la última posición que ya no es necesaria
         self.head = (self.head[0] + self.x, self.head[1] + self.y)
         self.body.insert(0, self.head)
@@ -96,28 +102,34 @@ class SnakeBody:
     
     # Función para verificar si el Snake no ha chocado contra las paredes
     def collition(self):
-        # Verifica si no se ha salido del eje X o Y positivo/negativo en caso de hacerlo, se termina el juego
-        if self.head[0] > self.rows - 1 or self.head[1] > self.rows - 1 or self.head[0] < 0 or self.head[1] < 0:
-            pygame.display.quit()
-            pygame.quit()
-            return False
-        # Verifica que la colisión haya llegado con la posición de la comida
-        elif self.head == self.food_position:
-            # Crea una nueva posición para la comida del Snake
-            self.new_food_pos()
-            # Crea un nuevo cuerpo para el Snake agregando la comida que se comió
-            self.body.insert(0, self.head)
-            return True
+        # Condicionante que corrobora que el Snake aún tiene pasos disponibles para dar
+        if self.pasos_restantes > 1:
+            # Verifica si no se ha salido del eje X o Y positivo/negativo en caso de hacerlo, se termina el juego
+            if self.head[0] > self.rows - 1 or self.head[1] > self.rows - 1 or self.head[0] < 0 or self.head[1] < 0:
+                pygame.display.quit()
+                pygame.quit()
+                return False
+            # Verifica que la colisión haya llegado con la posición de la comida
+            elif self.head == self.food_position:
+                # Premio de pasos para que el Snake siga caminando
+                self.pasos_restantes += 100
+                # Crea una nueva posición para la comida del Snake
+                self.new_food_pos()
+                # Crea un nuevo cuerpo para el Snake agregando la comida que se comió
+                self.body.insert(0, self.head)
+                return True
+            else:
+                # Verifica si la posición del Head colisiona con alguna parte del Body
+                for i in range(len(self.body)):
+                    if i != 0:      # Se salta el Head para solo evaluar el resto del cuerpo
+                        if self.head == self.body[i]:
+                            pygame.display.quit()
+                            pygame.quit()
+                            return False
+                return True
         else:
-            # Verifica si la posición del Head colisiona con alguna parte del Body
-            for i in range(len(self.body)):
-                if i != 0:      # Se salta el Head para solo evaluar el resto del cuerpo
-                    if self.head == self.body[i]:
-                        pygame.display.quit()
-                        pygame.quit()
-                        return False
-            return True
-    
+            return False
+
     # Dibuja el cuerpo de la serpiente en pantalla
     def draw(self):
         is_head = True
