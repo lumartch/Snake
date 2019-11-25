@@ -48,10 +48,10 @@ class Snake:
     
     # Fitness para el comportamiento del Snake
     def fitness(self, cromosoma):
+        r = 0
         for i in range(len(cromosoma)):
-            if cromosoma[i] == 0:
-                return self.snake.distancia / self.snake.comida_ingerida
-        return 0
+            r += abs(cromosoma[i]) /self.snake.food_position 
+        return r
 
 
 # Clase para pintar el cuerpo de la serpiente en el mapa
@@ -80,31 +80,32 @@ class SnakeBody:
         self.new_food_pos()
         self.dis_food_snake()
         # Comida ingerida actualmente
-        self.comida_ingerida = 1
+        #self.comida_ingerida = 1
 
     # Función para el movimiento de la serpiente dentro del mapa
-    def move(self):
+    def move(self, mejor_historico):
         # Se crea el ciclo donde será evaluado el listener
-        for event in pygame.event.get():
+        #for event in pygame.event.get():
             # Se crea el listener para el teclado
-            keys = pygame.key.get_pressed()
-            for key in keys:
-                if keys[pygame.K_LEFT]:
-                    if(self.x != 1):
-                        self.x = -1
-                        self.y = 0
-                elif keys[pygame.K_RIGHT]:
-                    if(self.x != -1):
-                        self.x = 1
-                        self.y = 0
-                elif keys[pygame.K_UP]:
-                    if(self.y != 1):
-                        self.y = -1
-                        self.x = 0
-                elif keys[pygame.K_DOWN]:
-                    if(self.y != -1):
-                        self.y = 1
-                        self.x = 0
+        #    keys = pygame.key.get_pressed()
+        #    for key in keys:
+        #        if keys[pygame.K_LEFT]:
+        #            if(self.x != 1):
+        #                self.x = -1
+        #                self.y = 0
+        #        elif keys[pygame.K_RIGHT]:
+        #            if(self.x != -1):
+        #                self.x = 1
+        #                self.y = 0
+        #        elif keys[pygame.K_UP]:
+        #            if(self.y != 1):
+        #                self.y = -1
+        #                self.x = 0
+        #        elif keys[pygame.K_DOWN]:
+        #            if(self.y != -1):
+        #                self.y = 1
+        #                self.x = 0
+
 
         # Resta de forma indiferente el valor absoluto de X o Y a los pasos restantes
         self.pasos_restantes -= abs(self.x)
@@ -122,8 +123,6 @@ class SnakeBody:
         if self.pasos_restantes > 1:
             # Verifica si no se ha salido del eje X o Y positivo/negativo en caso de hacerlo, se termina el juego
             if self.head[0] > self.rows - 1 or self.head[1] > self.rows - 1 or self.head[0] < 0 or self.head[1] < 0:
-                pygame.display.quit()
-                pygame.quit()
                 return False
             # Verifica que la colisión haya llegado con la posición de la comida
             elif self.head == self.food_position:
@@ -139,8 +138,6 @@ class SnakeBody:
                 for i in range(len(self.body)):
                     if i != 0:      # Se salta el Head para solo evaluar el resto del cuerpo
                         if self.head == self.body[i]:
-                            pygame.display.quit()
-                            pygame.quit()
                             return False
                 return True
         else:
