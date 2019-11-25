@@ -1,28 +1,46 @@
 import pygame
 import random
 
+# Clase para pintar el cuerpo de la serpiente en el mapa
 class Snake:
     MIN_VALUE = 0
     MAX_VALUE = 3
-    def __init__(self, size = 600, rows = 21):
+    def __init__(self, size = 600, rows = 21, colorHead = (255,255,255), colorBody = (47,79,79), colorFood = (255,0,0)):
+        # Variables para el manejo del cuerpo de la serpiente
+        self.body = []
+        self.size = size
+        self.rows = rows
+        self.head = (int(self.rows/2), int(self.rows/2))
+        self.body.append(self.head)
+        # Variable que castiga la cantidad de pasos dados
+        self.pasos_restantes = 100
+        # Variable para la distancia restante que quedá entre el Snake y la comida
+        self.distancia = 0
+        # Variables para el apartado gráfico de la serpiente y la comida
+        self.colorHead = colorHead
+        self.colorBody = colorBody
+        self.colorFood = colorFood
+        # Variables para agrear de forma continua el movimiento del Snake
+        self.x = 0      # El Snake comenzará siempre su movimiento por la derecha
+        self.y = 0      # El Snake no se movera de forma vertical
+        # Variable para la posición de la comida
+        self.food_position = 0
+        self.new_food_pos()
+        self.dis_food_snake()
         # Variables para definir el tamaño de la pantalla y sus subdivisiones
         self.width = size
         self.height = size
-        self.size = size
-        self.rows = rows
         # Bandera para terminar el juego
         self.flag = True
         # Variables para mostrar la pantalla
         self.window = pygame.display.set_mode((self.width, self.height))
         self.clock = pygame.time.Clock()
-        # Instancia de la clase Snake
-        self.snake = SnakeBody(self.size, self.rows, self.window)
-
+    
     # Función para actualizar el estado de la pantalla
     def updateWindow(self):
         self.window.fill((0,0,0))       # Define el color de la pantalla en NEGRO
-        self.snake.draw_food()
-        self.snake.draw()               # Dibuja la serpiente en pantalla
+        self.draw_food()
+        self.draw()                     # Dibuja la serpiente en pantalla
         self.drawGrid()                 # Dibuja el cuadriculado en pantalla
         pygame.display.update()         # Muestra lo previamente dibujado en la ventana a modo de Update
 
@@ -36,76 +54,30 @@ class Snake:
             y = y + square_size
             pygame.draw.line(self.window, (255,255,255), (x,0), (x, self.width))
             pygame.draw.line(self.window, (255,255,255), (0,y), (self.width, y))
-    
-    # Función para desplegar el gamplay completo del snake
-    #def gameplay(self):
-    #    while self.flag:
-    #        self.updateWindow()                 # Actualización de los elementos en pantalla
-    #        self.clock.tick(10)                 # Velocidad del juego
-    #        self.snake.move()                   # Listener del movimiento del Snake
-    #        self.flag = self.snake.collition()  # Corroboración de los límites del snake
-    #        pygame.time.delay(30)
-    
-    # Fitness para el comportamiento del Snake
-    def fitness(self, cromosoma):
-        r = 0
-        for i in range(len(cromosoma)):
-            r += abs(cromosoma[i]) /self.snake.food_position 
-        return r
-
-
-# Clase para pintar el cuerpo de la serpiente en el mapa
-class SnakeBody:
-    def __init__(self, size, rows, window, colorHead = (255,255,255), colorBody = (47,79,79), colorFood = (255,0,0)):
-        # Variables para el manejo del cuerpo de la serpiente
-        self.body = []
-        self.size = size
-        self.rows = rows
-        self.head = (int(self.rows/2), int(self.rows/2))
-        self.body.append(self.head)
-        # Variable que castiga la cantidad de pasos dados
-        self.pasos_restantes = 100
-        # Variable para la distancia restante que quedá entre el Snake y la comida
-        self.distancia = 0
-        # Variables para el apartado gráfico de la serpiente y la comida
-        self.window = window
-        self.colorHead = colorHead
-        self.colorBody = colorBody
-        self.colorFood = colorFood
-        # Variables para agrear de forma continua el movimiento del Snake
-        self.x = 0      # El Snake comenzará siempre su movimiento por la derecha
-        self.y = 0      # El Snake no se movera de forma vertical
-        # Variable para la posición de la comida
-        self.food_position = 0
-        self.new_food_pos()
-        self.dis_food_snake()
-        # Comida ingerida actualmente
-        #self.comida_ingerida = 1
 
     # Función para el movimiento de la serpiente dentro del mapa
     def move(self, mejor_historico):
         # Se crea el ciclo donde será evaluado el listener
-        #for event in pygame.event.get():
+        for event in pygame.event.get():
             # Se crea el listener para el teclado
-        #    keys = pygame.key.get_pressed()
-        #    for key in keys:
-        #        if keys[pygame.K_LEFT]:
-        #            if(self.x != 1):
-        #                self.x = -1
-        #                self.y = 0
-        #        elif keys[pygame.K_RIGHT]:
-        #            if(self.x != -1):
-        #                self.x = 1
-        #                self.y = 0
-        #        elif keys[pygame.K_UP]:
-        #            if(self.y != 1):
-        #                self.y = -1
-        #                self.x = 0
-        #        elif keys[pygame.K_DOWN]:
-        #            if(self.y != -1):
-        #                self.y = 1
-        #                self.x = 0
-
+            keys = pygame.key.get_pressed()
+            for key in keys:
+                if keys[pygame.K_LEFT]:
+                    if(self.x != 1):
+                        self.x = -1
+                        self.y = 0
+                elif keys[pygame.K_RIGHT]:
+                    if(self.x != -1):
+                        self.x = 1
+                        self.y = 0
+                elif keys[pygame.K_UP]:
+                    if(self.y != 1):
+                        self.y = -1
+                        self.x = 0
+                elif keys[pygame.K_DOWN]:
+                    if(self.y != -1):
+                        self.y = 1
+                        self.x = 0
 
         # Resta de forma indiferente el valor absoluto de X o Y a los pasos restantes
         self.pasos_restantes -= abs(self.x)
@@ -178,3 +150,9 @@ class SnakeBody:
         x = self.food_position[0] - self.head[0]
         y = self.food_position[1] - self.head[1]
         self.distancia = abs(x) + abs(y)
+
+    def fitness(self, cromosoma):
+        r = 0
+        for i in range(len(cromosoma)):
+            r += abs(cromosoma[i]) /self.food_position 
+        return r
