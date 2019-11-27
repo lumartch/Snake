@@ -1,9 +1,10 @@
 import pygame
 import random
+import time
 
 # Clase para pintar el cuerpo de la serpiente en el mapa
 class Snake:
-    MIN_VALUE = 0
+    MIN_VALUE = 0.1
     MAX_VALUE = 3
     def __init__(self, size = 600, rows = 21, colorHead = (255,255,255), colorBody = (47,79,79), colorFood = (255,0,0)):
         # Variables para el manejo del cuerpo de la serpiente
@@ -12,8 +13,6 @@ class Snake:
         self.rows = rows
         self.head = (int(self.rows/2), int(self.rows/2))
         self.body.append(self.head)
-        # Variable que castiga la cantidad de pasos dados
-        self.pasos_restantes = 100
         # Variable para la distancia restante que quedá entre el Snake y la comida
         self.distancia = 0
         # Variables para el apartado gráfico de la serpiente y la comida
@@ -21,17 +20,14 @@ class Snake:
         self.colorBody = colorBody
         self.colorFood = colorFood
         # Variables para agrear de forma continua el movimiento del Snake
-        self.x = 0      # El Snake comenzará siempre su movimiento por la derecha
+        self.x = 1      # El Snake comenzará siempre su movimiento por la derecha
         self.y = 0      # El Snake no se movera de forma vertical
         # Variable para la posición de la comida
         self.food_position = 0
         self.new_food_pos()
-        self.dis_food_snake()
         # Variables para definir el tamaño de la pantalla y sus subdivisiones
         self.width = size
         self.height = size
-        # Bandera para terminar el juego
-        self.flag = True
         # Variables para mostrar la pantalla
         self.window = pygame.display.set_mode((self.width, self.height))
         self.clock = pygame.time.Clock()
@@ -56,64 +52,31 @@ class Snake:
             pygame.draw.line(self.window, (255,255,255), (0,y), (self.width, y))
 
     # Función para el movimiento de la serpiente dentro del mapa
-    def move(self, mejor_historico):
-        # Se crea el ciclo donde será evaluado el listener
-        for event in pygame.event.get():
-            # Se crea el listener para el teclado
-            keys = pygame.key.get_pressed()
-            for key in keys:
-                if keys[pygame.K_LEFT]:
-                    if(self.x != 1):
-                        self.x = -1
-                        self.y = 0
-                elif keys[pygame.K_RIGHT]:
-                    if(self.x != -1):
-                        self.x = 1
-                        self.y = 0
-                elif keys[pygame.K_UP]:
-                    if(self.y != 1):
-                        self.y = -1
-                        self.x = 0
-                elif keys[pygame.K_DOWN]:
-                    if(self.y != -1):
-                        self.y = 1
-                        self.x = 0
-
-        # Resta de forma indiferente el valor absoluto de X o Y a los pasos restantes
-        self.pasos_restantes -= abs(self.x)
-        self.pasos_restantes -= abs(self.y)
+    def move(self, individuo):
+        if individuo.x_y == self.food_position:
+            self.draw_food()
         # Se actualiza la nueva posición del Head del Snake y se bota la última posición que ya no es necesaria
-        self.head = (self.head[0] + self.x, self.head[1] + self.y)
+        self.x = individuo.x_y[0]
+        self.y = individuo.x_y[1]
+        self.head = [self.head[0] + self.x, self.head[1] + self.y]
         self.body.insert(0, self.head)
         self.body.pop()
-        # Se actualiza la distancia entre el Snake y la comida
-        self.dis_food_snake()
     
     # Función para verificar si el Snake no ha chocado contra las paredes
-    def collition(self):
-        # Condicionante que corrobora que el Snake aún tiene pasos disponibles para dar
-        if self.pasos_restantes > 1:
-            # Verifica si no se ha salido del eje X o Y positivo/negativo en caso de hacerlo, se termina el juego
-            if self.head[0] > self.rows - 1 or self.head[1] > self.rows - 1 or self.head[0] < 0 or self.head[1] < 0:
-                return False
-            # Verifica que la colisión haya llegado con la posición de la comida
-            elif self.head == self.food_position:
-                # Premio de pasos para que el Snake siga caminando
-                self.pasos_restantes += 100
-                # Crea una nueva posición para la comida del Snake
-                self.new_food_pos()
-                # Crea un nuevo cuerpo para el Snake agregando la comida que se comió
-                self.body.insert(0, self.head)
-                return True
-            else:
-                # Verifica si la posición del Head colisiona con alguna parte del Body
-                for i in range(len(self.body)):
-                    if i != 0:      # Se salta el Head para solo evaluar el resto del cuerpo
-                        if self.head == self.body[i]:
-                            return False
-                return True
+    def collition(self, x_y):
+        # Verifica si no se ha salido del eje X o Y positivo/negativo en caso de hacerlo, se termina el juego
+        if x_y[0] > self.rows - 1 or x_y[1] > self.rows - 1 or x_y[0] < 0 or x_y[1] < 0:
+            return 0
+        # Verifica que la colisión haya llegado con la posición de la comida
+        elif x_y == self.food_position:
+            return 2
         else:
-            return False
+            # Verifica si la posición del Head colisiona con alguna parte del Body
+            for i in range(len(self.body)):
+                if i != 0:      # Se salta el Head para solo evaluar el resto del cuerpo
+                    if x_y == self.body[i]:
+                        return 0
+            return 1
 
     # Dibuja el cuerpo de la serpiente en pantalla
     def draw(self):
@@ -146,13 +109,19 @@ class Snake:
                 self.food_position = (random.randint(0, self.rows - 1), random.randint(0,self.rows - 1))
     
     # Función que cálcula la distancia restante entre el Snake y la comida
-    def dis_food_snake(self):
-        x = self.food_position[0] - self.head[0]
-        y = self.food_position[1] - self.head[1]
-        self.distancia = abs(x) + abs(y)
+    def dis_food_snake(self, x_y):
+        x = self.food_position[0] - x_y[0]
+        y = self.food_position[1] - x_y[1]
+        distancia = abs(x) + abs(y)
+        return distancia
 
     def fitness(self, cromosoma):
-        r = 0
-        for i in range(len(cromosoma)):
-            r += abs(cromosoma[i]) /self.food_position 
-        return r
+        f = 0
+        # Suma del cromosoma
+        for c in cromosoma:
+            f += c
+        # Cálculo de la colisión
+        #mul = self.collition([x_y[0] + self.x, x_y[1] + self.y])
+        #distancia = self.dis_food_snake([x_y[0] + self.x, x_y[1] + self.y])
+        
+        return f

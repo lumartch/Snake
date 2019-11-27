@@ -1,6 +1,7 @@
 import copy
 import numpy as np
 import pygame
+import time
 
 # Clase Individuo
 class Individuo:
@@ -8,10 +9,11 @@ class Individuo:
         self.dimensiones = dimensiones
         self.cromosoma = cromosoma
         self.fitness = 0
+        self.x_y = []
 
 # Algoritmo Genético continuo
 class AGC:
-    def __init__(self, problema, c_individuos = 80, generaciones = 2000, dimensiones = 2, indice_mutacion = 0.02):
+    def __init__(self, problema, c_individuos = 5, generaciones = 2000, dimensiones = 4, indice_mutacion = 0.02):
         # Variables para el algoritmo genético
         self.c_individuos = c_individuos
         self.dimensiones = dimensiones
@@ -61,7 +63,7 @@ class AGC:
         for h in hijos:
             for a in range(len(h.cromosoma)):
                 if np.random.rand() < self.indice_mutacion:
-                    h.cromosoma[a] = self.problema.MIN_VALUE + np.random.random() * (self.problema.MAX_VALUE - self.problema.MIN_VALUE)
+                    h.cromosoma[a] = self.problema.MIN_VALUE + np.random.randint(self.problema.MAX_VALUE) * (self.problema.MAX_VALUE - self.problema.MIN_VALUE)
 
     def mejor(self):
         for individuo in self.array_individuos:
@@ -69,32 +71,38 @@ class AGC:
                 self.mejor_historico = copy.deepcopy(individuo)
 
     def run(self):
-        #self.inicializar_individuos()
-        #self.mejor_historico = self.array_individuos[0]
+        self.inicializar_individuos()
+        self.mejor_historico = self.array_individuos[0]
+        self.evaluar_individuos()
+        i = 0
+        for ind in self.array_individuos:
+            print("# " + str(i) +  " Fitness: " +  str(ind.fitness))
+            i +=1
+        #self.mejor()
+        
         #generacion = 0
         # Condición de paro para el algoritmo genético
-        while self.problema.flag:
-            #self.evaluar_individuos()
+        #while self.problema.flag:
+        #    self.evaluar_individuos()
             #self.mejor()
-            # Código que va ligado a pintar el mejor individuo en 
-            self.problema.updateWindow()                        # Actualización de los elementos en pantalla
-            self.problema.clock.tick(10)                        # Velocidad del juego
-            self.problema.move(self.mejor_historico)                          # Listener del movimiento del Snake
-            self.problema.flag = self.problema.collition()# Corroboración de los límites del snake
-            pygame.time.delay(10)
-            # Implementación del algoritmo Genético
-        #    hijos = np.array([])
-        #    while len(hijos) < len(self.array_individuos):
-        #        padre1 = self.ruleta()
-        #        padre2 = self.ruleta()
-        #        while padre1 == padre2:
-        #            padre2 = self.ruleta()
-        #        h1, h2 = self.cruza(self.array_individuos[padre1], self.array_individuos[padre2])
-        #        hijos = np.append(hijos, [h1])
-        #        hijos = np.append(hijos, [h2])
-        #    self.mutacion(hijos)
-        #    self.array_individuos = np.copy(hijos)
-        #    print("Generación: ", generacion, 'Mejor Histórico: ', self.mejor_historico.cromosoma, -1 * (self.mejor_historico.fitness - self.problema.MAX_VALUE ** self.dimensiones * 1000))
+        #    self.problema.updateWindow()                        # Actualización de los elementos en pantalla
+        #    self.problema.clock.tick(5)                         # Velocidad del juego
+            #if generacion == 0:
+            #    self.problema.move(self.mejor_historico)            # Listener del movimiento del Snake
+            #    print(self.mejor_historico.x_y)
+            # self.problema.flag = self.problema.collition()     # Corroboración de los límites del snake
+            #hijos = np.array([])
+            #while len(hijos) < len(self.array_individuos):
+            #    padre1 = self.ruleta()
+            #    padre2 = self.ruleta()
+            #    while padre1 == padre2:
+            #        padre2 = self.ruleta()
+            #    h1, h2 = self.cruza(self.array_individuos[padre1], self.array_individuos[padre2])
+            #    hijos = np.append(hijos, [h1])
+            #    hijos = np.append(hijos, [h2])
+            #self.mutacion(hijos)
+            #self.array_individuos = np.copy(hijos)
+            #print("Generación: ", generacion, 'Mejor Histórico: ', self.mejor_historico.cromosoma, -1 * (self.mejor_historico.fitness - self.problema.MAX_VALUE ** self.dimensiones * 1000))
         #    generacion += 1
-        pygame.display.quit()
-        pygame.quit()
+        #pygame.display.quit()
+        #pygame.quit()
