@@ -4,7 +4,7 @@ import time
 
 # Clase para pintar el cuerpo de la serpiente en el mapa
 class Snake:
-    MIN_VALUE = 0.1
+    MIN_VALUE = 1
     MAX_VALUE = 3
     def __init__(self, size = 600, rows = 21, colorHead = (255,255,255), colorBody = (47,79,79), colorFood = (255,0,0)):
         # Variables para el manejo del cuerpo de la serpiente
@@ -53,11 +53,15 @@ class Snake:
 
     # Función para el movimiento de la serpiente dentro del mapa
     def move(self, individuo):
-        if individuo.x_y == self.food_position:
+        f = 10*(individuo.fitness - int(individuo.fitness))
+        x_y = self.random_x_y(f)
+        print(f)
+        print(x_y)
+        self.x = x_y[0]
+        self.y = x_y[1]
+        if x_y == self.food_position:
             self.draw_food()
         # Se actualiza la nueva posición del Head del Snake y se bota la última posición que ya no es necesaria
-        self.x = individuo.x_y[0]
-        self.y = individuo.x_y[1]
         self.head = [self.head[0] + self.x, self.head[1] + self.y]
         self.body.insert(0, self.head)
         self.body.pop()
@@ -102,6 +106,7 @@ class Snake:
 
     # Asigna una nueva posición aleatoria al alimento, que no se encuentre en colisión con el cuerpo del Snake
     def new_food_pos(self):
+        #self.food_position = [10, 9]
         self.food_position = (random.randint(0, self.rows -1), random.randint(0,self.rows - 1))
         for i in range(len(self.body)):
             if self.food_position == self.body[i]:
@@ -110,9 +115,12 @@ class Snake:
     
     # Función que cálcula la distancia restante entre el Snake y la comida
     def dis_food_snake(self, x_y):
+        print(x_y)
         x = self.food_position[0] - x_y[0]
         y = self.food_position[1] - x_y[1]
         distancia = abs(x) + abs(y)
+        if distancia == 0:
+            distancia = 0.1
         return distancia
 
     def fitness(self, cromosoma):
@@ -120,8 +128,42 @@ class Snake:
         # Suma del cromosoma
         for c in cromosoma:
             f += c
+        f = int(f%3)
+        # Asigna de forma aleatoria el
+        x_y = self.random_x_y(f)
+        x_y = [x_y[0] + self.head[0], x_y[1] + self.head[1]]
         # Cálculo de la colisión
-        #mul = self.collition([x_y[0] + self.x, x_y[1] + self.y])
-        #distancia = self.dis_food_snake([x_y[0] + self.x, x_y[1] + self.y])
-        
+        mul = self.collition(x_y)
+        # Cálculo de la distancia
+        distancia = self.dis_food_snake(x_y)
+        distancia = 100*(1/distancia)
+        distancia *= mul
+        # Unión del fitness con el código para el cálculo de las posiciones en X_Y
+        f = f/10
+        f += int(distancia)
         return f
+
+    def random_x_y(self, f):
+        aux_x = 0
+        aux_y = 0
+        if self.x:
+            if f == 0:
+                aux_x = 0
+                aux_y = 1
+            elif f == 1:
+                aux_x = 0
+                aux_y = -1
+            else:
+                aux_x = self.x
+                aux_y = self.y
+        else:
+            if f == 0:
+                aux_x = 1
+                aux_y = 0
+            elif f == 1:
+                aux_x = -1
+                aux_y = 0
+            else:
+                aux_x = self.x
+                aux_y = self.y
+        return ([aux_x, aux_y])
